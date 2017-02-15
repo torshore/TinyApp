@@ -1,1 +1,13 @@
-<h1>  APP </h1>
+<h1>  Make your URL Teeny! </h1>
+
+<form method="POST" action="/login">
+  <input type="text" name="username">
+  <input type="submit" value="LOGIN">
+</form>
+
+<% if (typeof(username) != 'undefined') { %>
+   <%= username %>
+    <form method="POST" action="/logout">
+      <input type="submit" value="LOGOUT">
+    </form>
+<% } %>
