@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+
+<body>
+  <% include ./partials/_header.ejs %>
+  <h2>URLs:</h2>
+
+  <%urls%>
+   <a href=""> Click Here to Squish </a>
+   <ul>
+     <% Object.keys(urls).forEach(function(shortURL, realURL){ %>
+        <form method="POST" action="/urls/<%= shortURL %>/delete">
+          <li> <%= shortURL %> &#8594; <%= urls[shortURL] %> </li>
+          <input type="submit" value="DELETE">
+          <a href="/urls/:id">EDIT</a>
+        </form>
+     <% }); %>
+    </ul>
+
+
+</body>
+
+</html>
