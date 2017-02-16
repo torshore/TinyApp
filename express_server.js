@@ -3,16 +3,35 @@ var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 
-
-
 function generateRandomString() {
  var text = "";
  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
  for( var i=0; i < 6; i++){
   text += possible.charAt(Math.floor(Math.random() * possible.length));
  }
  return text;
+}
+
+function seeIfUserExists(users, emailString) {
+  for (user in users){
+    if (users[user].email === emailString) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 }
 
 var urlDatabase = {
@@ -77,14 +96,35 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  res.cookie("tinyapp", req.body.username);
   res.redirect('/');
 });
-console.log('hey')
+
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username);
+  res.clearCookie("tinyapp", req.body.username);
   res.redirect('/');
 });
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+  if (seeIfUserExists(users, req.body.email)) {
+    res.status(400).send("This email already exists.");
+  };
+
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send('Please use a valid email and password');
+  } else {
+  let userID = generateRandomString();
+  users[userID] = {id: userID, email: req.body.email, password: req.body.password};
+  res.cookie("tinyapp", userID);
+  res.redirect('/')
+  }
+  console.log(users);
+});
+console.log(users);
 
 app.listen(PORT, () => {
  console.log(`Example app listening on port ${PORT}!`);
