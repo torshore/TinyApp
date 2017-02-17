@@ -21,6 +21,16 @@ function seeIfUserExists(users, emailString) {
   return false;
 }
 
+function urlsForUser(id) {
+  const userURLs = {};
+  for (shortURL in urlDatabase){
+    if (id === urlDatabase[shortURL].userID){
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+}
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -35,8 +45,12 @@ const users = {
 }
 
 var urlDatabase = {
- 'b2xVn2': "http://www.lighthouselabs.ca",
- '9sm5xK': "http://www.google.com"
+ 'b2xVn2': {longURL: "http://www.lighthouselabs.ca",
+            userID: "userRandomID"
+          },
+
+ '9sm5xK': {longURL: "http://www.google.com",
+            userID: "user2RandomID" }
 };
 
 app.set("view engine", "ejs");
@@ -47,19 +61,23 @@ var cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 app.get("/urls", (req, res) => {
- let templateVars = { urls: urlDatabase, user: users[req.cookies.tinyapp] };
+ let templateVars = { urls: urlsForUser(req.cookies.tinyapp), user: users[req.cookies.tinyapp] };
  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user: users[req.cookies.tinyapp] }
- res.render("urls_new");
+  let templateVars = { user: users[req.cookies.tinyapp], }
+  if (req.cookies.tinyapp) {
+    return res.render("urls_new");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.post("/urls", (req, res) => {
  console.log(req.body);  // debug statement to see POST parameters
  let shortId = generateRandomString();
- urlDatabase[shortId] = req.body.longURL;
+ urlDatabase[shortId] = {longURL: req.body.longURL, userID: req.cookies.tinyapp}
  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -91,13 +109,13 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.get("/login", (req, res) => {
   let templateVars = { urls: urlDatabase, user: users[req.cookies.tinyapp] };
-  res.render("urls_login")
+  res.render("urls_login", templateVars)
 })
 
 app.post("/login", (req, res) => {
@@ -106,15 +124,15 @@ app.post("/login", (req, res) => {
 
   for(var user_id in users) {
      if (users[user_id].email === email && users[user_id].password === password) {
-      res.cookie("tinyapp", user_id);
-      return res.redirect("/");
+       res.cookie("tinyapp", user_id);
+       return res.redirect("/");
      }
    }
   return res.status(403).send("Please provide a valid email address and password to login");
   });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp", req.body.tinyapp);
+  res.clearCookie("tinyapp");
   res.redirect('/');
 });
 
