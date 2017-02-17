@@ -106,16 +106,15 @@ app.post("/login", (req, res) => {
 
   for(var user_id in users) {
      if (users[user_id].email === email && users[user_id].password === password) {
-      res.cookie("tinyapp", userID);
-      res.redirect("/");
+      res.cookie("tinyapp", user_id);
+      return res.redirect("/");
      }
-     return res.status(403).send("Please provide a valid email address and password to login");
-     }
+   }
+  return res.status(403).send("Please provide a valid email address and password to login");
   });
 
-
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp", req.body.username);
+  res.clearCookie("tinyapp", req.body.tinyapp);
   res.redirect('/');
 });
 
@@ -136,7 +135,7 @@ app.post("/register", (req, res) => {
   res.cookie("tinyapp", userID);
   res.redirect('/')
   }
-  console.log(users);
+  console.log(138, users);
 });
 
 
