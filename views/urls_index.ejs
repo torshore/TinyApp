@@ -10,17 +10,19 @@
   <h2>URLs:</h2>
 
   <%urls, user%>
-   <a href=""> Click Here to Squish </a>
+   <a href="/urls/new"> Click Here to Squish </a>
    <ul>
-     <% Object.keys(urls).forEach(function(shortURL, realURL) { %>
-        <form method="POST" action="/urls/<%= shortURL %>/delete">
-          <li> <%= shortURL %> &#8594; <%= urls[shortURL] %> </li>
-          <input type="submit" value="DELETE">
-          <a href="/urls/:id">EDIT</a>
-        </form>
-     <% }); %>
-    </ul>
+     <% Object.keys(urls).forEach(function(shortURL) { %>
+       <li> <%= shortURL %> &#8594; <%= urls[shortURL].longURL %> </li>
+       <% if (user && user["id"] == urls[shortURL]["userID"])  {%>
+         <form method="POST" action="/urls/<%= shortURL %>/delete">
+           <input type="submit" value="DELETE">
+           <a href="/urls/:id">EDIT</a>
+         </form>
 
+         <% } %>
+      <% }); %>
+  </ul>
 
 </body>
 
