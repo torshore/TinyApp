@@ -2,12 +2,19 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const cookieSession = require("cookie-session");
 
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 
 function generateRandomString() {
- var text = "";
- var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+ let text = "";
+ let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
  for( var i=0; i < 6; i++){
   text += possible.charAt(Math.floor(Math.random() * possible.length));
  }
@@ -47,44 +54,36 @@ const users = {
 }
 
 var urlDatabase = {
- 'b2xVn2': {longURL: "http://www.lighthouselabs.ca",
+ "b2xVn2": {longURL: "http://www.lighthouselabs.ca",
             userID: "userRandomID"
           },
 
- '9sm5xK': {longURL: "http://www.google.com",
+ "9sm5xK": {longURL: "http://www.google.com",
             userID: "user2RandomID" }
 };
 
-app.set("view engine", "ejs");
-
-app.use(bodyParser.urlencoded({extended: true}));
-
-var cookieSession = require("cookie-session");
-app.use(cookieSession());
-
 app.get("/urls", (req, res) => {
- let templateVars = { urls: urlsForUser(req.cookies.tinyapp), user: users[req.cookies.tinyapp] };
+ let templateVars = { urls: urlsForUser(req.session.tinyapp), user: users[req.session.tinyapp] };
  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user: users[req.cookies.tinyapp], }
-  if (req.cookies.tinyapp) {
-    return res.render("urls_new");
+  let templateVars = { user: users[req.session.tinyapp], }
+  if (req.session.tinyapp) {
+    return res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
   }
 });
 
 app.post("/urls", (req, res) => {
- console.log(req.body);  // debug statement to see POST parameters
  let shortId = generateRandomString();
- urlDatabase[shortId] = {longURL: req.body.longURL, userID: req.cookies.tinyapp}
+ urlDatabase[shortId] = {longURL: req.body.longURL, userID: req.session.tinyapp}
  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/:id", (req, res) => {
- let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookie.tinyapp]};
+ let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.session.tinyapp]};
  res.render("urls_show", templateVars);
 });
 
@@ -99,17 +98,11 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.get("/", (req, res) => {
- res.redirect('/urls');
-
- // res.end("Hello!");
+ res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {
  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
- res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -118,7 +111,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  let templateVars = { urls: urlDatabase, user: users[req.cookies.tinyapp] };
+  let templateVars = { urls: urlDatabase, user: users[req.session.tinyapp] };
   res.render("urls_login", templateVars)
 })
 
@@ -129,7 +122,7 @@ app.post("/login", (req, res) => {
   for(var user_id in users) {
     const check = bcrypt.compareSync(password, users[user_id].password);
      if (users[user_id].email === email && (check === true)) {
-       res.cookie("tinyapp", user_id);
+       req.session.tinyapp = userID;
        return res.redirect("/urls");
      }
    }
@@ -137,8 +130,8 @@ app.post("/login", (req, res) => {
   });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp");
-  res.redirect('/');
+  req.session = null;
+  res.redirect("/");
 });
 
 app.get("/register", (req, res) => {
@@ -153,15 +146,14 @@ app.post("/register", (req, res) => {
   };
 
   if (!req.body.email || !password) {
-    res.status(400).send('Please use a valid email and password');
+    res.status(400).send("Please use a valid email and password");
   } else {
   let userID = generateRandomString();
   users[userID] = {id: userID, email: req.body.email, password: hashed_password};
-  res.cookie("tinyapp", userID);
-  res.redirect('/')
+  req.session.tinyapp = userID;
+  res.redirect("/")
   }
 });
-
 
 app.listen(PORT, () => {
  console.log(`Example app listening on port ${PORT}!`);
