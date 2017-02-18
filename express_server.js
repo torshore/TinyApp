@@ -1,7 +1,9 @@
-var express = require("express");
-var app = express();
-var PORT = process.env.PORT || 8080; // default port 8080
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+
 
 function generateRandomString() {
  var text = "";
@@ -57,8 +59,8 @@ app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-var cookieParser = require("cookie-parser");
-app.use(cookieParser());
+var cookieSession = require("cookie-session");
+app.use(cookieSession());
 
 app.get("/urls", (req, res) => {
  let templateVars = { urls: urlsForUser(req.cookies.tinyapp), user: users[req.cookies.tinyapp] };
@@ -97,7 +99,9 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.get("/", (req, res) => {
- res.end("Hello!");
+ res.redirect('/urls');
+
+ // res.end("Hello!");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -119,13 +123,14 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
+  const password = req.body.password;
+  const email = req.body.email;
 
   for(var user_id in users) {
-     if (users[user_id].email === email && users[user_id].password === password) {
+    const check = bcrypt.compareSync(password, users[user_id].password);
+     if (users[user_id].email === email && (check === true)) {
        res.cookie("tinyapp", user_id);
-       return res.redirect("/");
+       return res.redirect("/urls");
      }
    }
   return res.status(403).send("Please provide a valid email address and password to login");
@@ -141,19 +146,20 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const password = req.body.password;
+  const hashed_password = bcrypt.hashSync(password, 10);
   if (seeIfUserExists(users, req.body.email)) {
     res.status(400).send("This email already exists.");
   };
 
-  if (!req.body.email || !req.body.password) {
+  if (!req.body.email || !password) {
     res.status(400).send('Please use a valid email and password');
   } else {
   let userID = generateRandomString();
-  users[userID] = {id: userID, email: req.body.email, password: req.body.password};
+  users[userID] = {id: userID, email: req.body.email, password: hashed_password};
   res.cookie("tinyapp", userID);
   res.redirect('/')
   }
-  console.log(138, users);
 });
 
 
