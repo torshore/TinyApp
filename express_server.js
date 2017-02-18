@@ -119,9 +119,9 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
 
-  for(var user_id in users) {
-    const check = bcrypt.compareSync(password, users[user_id].password);
-     if (users[user_id].email === email && (check === true)) {
+  for(var userID in users) {
+    const check = bcrypt.compareSync(password, users[userID].password);
+     if (users[userID].email === email && (check === true)) {
        req.session.tinyapp = userID;
        return res.redirect("/urls");
      }

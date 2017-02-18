@@ -14,7 +14,7 @@
    <ul>
      <% Object.keys(urls).forEach(function(shortURL) { %>
        <li> <%= shortURL %> &#8594; <%= urls[shortURL].longURL %> </li>
-       <% if (user && user["id"] == urls[shortURL]["userID"])  {%>
+       <% if (user && user["id"] == urls[shortURL]["userID"])  { %>
          <form method="POST" action="/urls/<%= shortURL %>/delete">
            <input type="submit" value="DELETE">
            <a href="/urls/:id">EDIT</a>
