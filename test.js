@@ -1,9 +1,15 @@
-//An array of strings
-var days = {};
-var array = ["2017-01-20", "2017-02-14"];
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
 
-array.forEach(function(elm) {
-  days[elm] = 10;
-});
 
-console.log(days);
+console.log(users["userRandomID"]);
