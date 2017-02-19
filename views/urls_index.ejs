@@ -17,7 +17,7 @@
        <% if (user && user["id"] == urls[shortURL]["userID"])  { %>
          <form method="POST" action="/urls/<%= shortURL %>/delete">
            <input type="submit" value="DELETE">
-           <a href="/urls/:id">EDIT</a>
+           <a href="/urls/<%= shortURL %>">EDIT</a>
          </form>
 
          <% } %>
