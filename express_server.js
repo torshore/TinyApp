@@ -102,7 +102,11 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.get("/", (req, res) => {
- res.redirect("/urls");
+  if(req.session.tinyapp) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -155,7 +159,7 @@ app.post("/register", (req, res) => {
   let userID = generateRandomString();
   users[userID] = {id: userID, email: req.body.email, password: hashed_password};
   req.session.tinyapp = userID;
-  res.redirect("/")
+  res.redirect("/urls")
   }
 });
 
