@@ -64,7 +64,11 @@ var urlDatabase = {
 
 app.get("/urls", (req, res) => {
  let templateVars = { urls: urlsForUser(req.session.tinyapp), user: users[req.session.tinyapp] };
- res.render("urls_index", templateVars);
+ if (!req.session.tinyapp) {
+    res.redirect("/login");
+  } else {
+    return res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
