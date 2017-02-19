@@ -110,7 +110,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let redirectURL = urlDatabase[shortURL].longURL;
+  let redirectURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(redirectURL);
 });
 
